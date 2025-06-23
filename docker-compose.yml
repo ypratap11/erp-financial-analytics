@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend
+  financial-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: erp-financial-api
+    ports:
+      - "8001:8001"
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8001
+    volumes:
+      - ./api:/app/api
+      - ./data:/app/data
+    restart: unless-stopped
+    networks:
+      - financial-network
+
+  # Streamlit Dashboard
+  financial-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    container_name: erp-financial-dashboard
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE_URL=http://financial-api:8001
+    volumes:
+      - ./dashboard:/app/dashboard
+    depends_on:
+      - financial-api
+    restart: unless-stopped
+    networks:
+      - financial-network
+
+networks:
+  financial-network:
+    driver: bridge
